@@ -7,7 +7,7 @@
     No final do método main, deve ser impresso: “Fim do programa!”
 */
 
-class MinhaThread3 extends Thread implements Runnable {
+class MinhaThread3 extends Thread {
 
     private String nome;
 

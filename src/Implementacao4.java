@@ -6,7 +6,7 @@
     4. Computa e exibe a quantidade de valores no vetor que são maiores que 0.25 e menores que 0.75
 */
 
-class MinhaThread4 extends Thread implements Runnable {
+class MinhaThread4 extends Thread {
 
     private String nome;
 
@@ -28,6 +28,7 @@ class MinhaThread4 extends Thread implements Runnable {
 public class Implementacao4 {
 
     public static void main(String[] args) throws InterruptedException {
+
 
         Thread t1 = new MinhaThread4("t1");
         Thread t2 = new MinhaThread4("t2");

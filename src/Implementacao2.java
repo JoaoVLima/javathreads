@@ -7,7 +7,7 @@
     Execute o programa pelo menos 3 vezes
 */
 
-class ContadorRunable extends Thread implements Runnable {
+class ContadorRunable implements Runnable {
 
     private String nome;
 
@@ -24,14 +24,17 @@ class ContadorRunable extends Thread implements Runnable {
 
 public class Implementacao2 {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
-        Thread t1 = new ContadorRunable("t1");
-        Thread t2 = new ContadorRunable("t2");
+        ContadorRunable t1_runable = new ContadorRunable("t1");
+        Thread t1 = new Thread(t1_runable);
+
+        ContadorRunable t2_runable = new ContadorRunable("t2");
+        Thread t2 = new Thread(t2_runable);
+
 
         t1.start();
         t2.start();
-
     }
 
 }
