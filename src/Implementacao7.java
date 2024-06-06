@@ -19,14 +19,14 @@
 
 import java.util.Random;
 
-class Fila {
-    private volatile double fila[];
+class Fila<T> {
+    private volatile T[] fila;
     private volatile int inicio;
     private volatile int fim;
     private volatile boolean vazia;
 
     public Fila(int tamanho) {
-        this.fila = new double[tamanho];
+        this.fila = (T[]) new Object[tamanho];
         this.inicio = 0;
         this.fim = 0;
         this.vazia = true;
@@ -40,7 +40,7 @@ class Fila {
         return this.vazia;
     }
 
-    public synchronized void adicionar(int valor) {
+    public synchronized void adicionar(T valor) {
         if (isCheia()) {
             throw new IllegalStateException("Fila cheia");
         }
@@ -49,11 +49,11 @@ class Fila {
         this.vazia = false;
     }
 
-    public synchronized double remover() {
+    public synchronized T remover() {
         if (this.vazia) {
             throw new IllegalStateException("Fila vazia");
         }
-        double valor = this.fila[inicio];
+        T valor = this.fila[inicio];
         this.inicio = (this.inicio + 1) % this.fila.length;
         this.vazia = this.inicio == this.fim;
         return valor;
@@ -90,19 +90,37 @@ class Fila {
 
 class Produtor extends Thread {
 
-    private Fila fila;
+    private Fila<Integer> fila;
     private String thread_name;
 
-    public Produtor(Fila fila, String thread_name) {
+    public Produtor(Fila<Integer> fila, String thread_name) {
         this.fila = fila;
         this.thread_name = thread_name;
     }
 
     public void run() {
         while(true){
+            Random rand = new Random();
+            int numero_randomico = rand.nextInt(1000);
+
+            if (this.fila.isCheia()){
+                System.out.println("fila cheia, nao pode adicionar");
+                synchronized (this.fila) {
+                    try {
+                        this.fila.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            this.fila.adicionar(numero_randomico);
+            synchronized (this.fila) {
+                this.fila.notify();
+            }
+            System.out.printf("Produtor %s produziu %d%n", this.thread_name, numero_randomico);
 
             try {
-                Thread.sleep(100);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -113,20 +131,34 @@ class Produtor extends Thread {
 
 class Consumidor extends Thread {
 
-    private Fila fila;
+    private Fila<Integer> fila;
     private String thread_name;
 
-    public Consumidor(Fila fila, String thread_name) {
+    public Consumidor(Fila<Integer> fila, String thread_name) {
         this.fila = fila;
         this.thread_name = thread_name;
     }
 
     public void run() {
         while(true) {
-
+            if (this.fila.isVazia()){
+                System.out.println("fila vazia, nao pode remover");
+                synchronized (this.fila) {
+                    try {
+                        this.fila.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            int numero_consumido = this.fila.remover();
+            synchronized (this.fila) {
+                this.fila.notify();
+            }
+            System.out.printf("Consumidor %s consumiu %d%n", this.thread_name, numero_consumido);
 
             try {
-                Thread.sleep(100);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -137,7 +169,8 @@ class Consumidor extends Thread {
 public class Implementacao7 {
 
     public static void main(String[] args) throws InterruptedException {
-        Fila fila = new Fila(10);
+        Fila<Integer> fila = new Fila<Integer>(10);
+
         Thread t1 = new Produtor(fila, "Thread 1");
         Thread t2 = new Consumidor(fila, "Thread 2");
 
